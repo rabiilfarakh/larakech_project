@@ -15,6 +15,5 @@ class Organisation extends Model
         'code_postal',
         'ville',
         'statut',
-        
     ];
 }

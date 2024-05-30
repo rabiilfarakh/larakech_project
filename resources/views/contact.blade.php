@@ -23,7 +23,6 @@
                 </button>            
                     
             </div>
-            
             <table class="w-full table-fixed mt-5">
                 <thead>
                     <tr class="bg-gray-100">
@@ -49,12 +48,12 @@
                         </td>
                         
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex space-x-5">
-                            <a href="#" class="text-gray-600 hover:text-gray-900">
+                            <a href="#" class="text-indigo-600 hover:text-indigo-900" onclick="showModalShow({{ $contact->id }})">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="#" class="text-indigo-600 hover:text-indigo-900">
+                            <a href="#" class="text-indigo-600 hover:text-indigo-900" onclick="showModalUpdate({{ $contact->id }})">
                                 <i class="fas fa-pencil-alt"></i>
-                            </a>
+                            </a>                            
                             <a href="#" class="text-red-600 hover:text-red-900" onclick="showModal_delete()">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
@@ -69,10 +68,17 @@
             </div>
         </div>
         
-        <?php require(resource_path('modals/contacts/contact_add.blade.php')); ?>
-        <?php require(resource_path('modals/contacts/contact_delete.blade.php')); ?>
-        <script src="{{ asset('js/modals.js') }}"></script>
+    
+        @include('modals.contacts.contact_add')
+        @include('modals.contacts.contact_delete')
+        @include('modals.contacts.contact_update')
+        @include('modals.contacts.contact_show')
         
+        <script src="{{ asset('js/ajax.js')}}"></script>
+        <script src="{{ asset('js/modals/contact_add.js')}}"></script>
+        <script src="{{ asset('js/modals/contact_delete.js')}}"></script>
+        <script src="{{ asset('js/modals/contact_update.js')}}"></script>
+        <script src="{{ asset('js/modals/contact_show.js')}}"></script>
 
     </body>
     </html>

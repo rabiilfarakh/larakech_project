@@ -11,7 +11,7 @@ class StoreOrganisationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -22,7 +22,11 @@ class StoreOrganisationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'nom' => 'required|regex:/^[a-zA-Z0-9]+$/|max:255',
+            'code_postal' => 'required|digits_between:1,10',
+            'ville' => 'required|string|max:255',
+            'adresse' => 'required|string|max:255',
+            'statut' => 'required|string|max:255',
         ];
     }
 }

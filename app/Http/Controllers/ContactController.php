@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Organisation;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreContactRequest;
 use App\Http\Requests\UpdateContactRequest;
+use App\Http\Requests\StoreOrganisationRequest;
 
 class ContactController extends Controller
 {
@@ -28,9 +32,28 @@ class ContactController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreContactRequest $request)
+    public function store(Request $request, StoreContactRequest $contactRequest, StoreOrganisationRequest $organisationRequest)
     {
-        //
+        dd("hey");
+        // $contactData = $contactRequest->validated();
+        // $organisationData = $organisationRequest->validated();
+
+        // DB::beginTransaction();
+
+        // try {
+        //     $organisation = Organisation::create($organisationData);
+
+        //     $contactData['organisation_id'] = $organisation->id;
+
+        //     $contact = Contact::create($contactData);
+
+        //     DB::commit();
+
+        //     return redirect()->route('contacts')->with('success', 'Contact et organisation ajoutés avec succès.');
+        // } catch (\Exception $e) {
+        //     DB::rollBack();
+        //     return redirect()->route('contacts')->with('error', 'Une erreur est survenue lors de la création du contact et de l\'organisation.');
+        // }
     }
 
     /**
@@ -38,8 +61,10 @@ class ContactController extends Controller
      */
     public function show(Contact $contact)
     {
-        //
+        $contactWithOrganization = Contact::with('organisation')->findOrFail($contact->id);
+        return response()->json($contactWithOrganization);
     }
+    
 
     /**
      * Show the form for editing the specified resource.
@@ -54,14 +79,27 @@ class ContactController extends Controller
      */
     public function update(UpdateContactRequest $request, Contact $contact)
     {
-        //
+        dd("update");
     }
 
     /**
      * Remove the specified resource from storage.
      */
+/**
+ * Remove the specified resource from storage.
+ */
     public function destroy(Contact $contact)
     {
-        //
+        try {
+            $contact->delete();
+            if ($contact->organisation->contacts()->count() === 0) {
+                $contact->organisation->delete();
+            }
+
+            return redirect()->route('contacts.index')->with('success', 'Contact supprimé avec succès.');
+        } catch (\Exception $e) {
+            return redirect()->route('contacts.index')->with('error', 'Une erreur est survenue lors de la suppression du contact.');
+        }
     }
+
 }
