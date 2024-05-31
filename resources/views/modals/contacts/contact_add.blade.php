@@ -23,11 +23,11 @@
                     </div>
                     <div class="col-span-2">
                         <label for="e-mail" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">E-mail</label>
-                        <input type="email" name="e-mail" id="e-mail" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="rabiilfarakh2816@gmail.com" required>
+                        <input type="email" name="e_mail" id="e-mail" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="rabiilfarakh2816@gmail.com" required>
                     </div>
                     <div class="col-span-2">
                         <label for="nom" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Entreprise</label>
-                        <input type="text" name="nom" id="entreprise" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Larakech" required>
+                        <input type="text" name="entreprise" id="entreprise" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Larakech" required>
                     </div>
                     <div class="col-span-2">
                         <label for="adresse" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Adresse</label>

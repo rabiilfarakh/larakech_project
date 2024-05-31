@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Http\Requests\StoreOrganisationRequest;
+use App\Services\DataFormatter;
 
 class ContactController extends Controller
 {
@@ -32,29 +33,39 @@ class ContactController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, StoreContactRequest $contactRequest, StoreOrganisationRequest $organisationRequest)
+    public function store(StoreContactRequest $contactRequest, StoreOrganisationRequest $organisationRequest)
     {
-        dd("hey");
-        // $contactData = $contactRequest->validated();
-        // $organisationData = $organisationRequest->validated();
+        // Validation des données
+        $validatedContactData = $contactRequest->validated();
+        $validatedOrganisationData = $organisationRequest->validated();
+        
+        // Formatage des données
+        $formattedContactData = DataFormatter::formatContact($validatedContactData);
+        $formattedOrganisationData = DataFormatter::formatOrganisation($validatedOrganisationData);
+        
+        // Générer une clé unique pour l'organisation
+        $formattedOrganisationData['cle'] = uniqid();
+        
+        // Création de l'organisation
+        $organisation = Organisation::create($formattedOrganisationData);
 
-        // DB::beginTransaction();
+        // Ajout de l'id de l'organisation au tableau de données du contact
+        $formattedContactData['organisation_id'] = $organisation->id;
 
-        // try {
-        //     $organisation = Organisation::create($organisationData);
+        // Générer une clé unique pour le contact
+        $formattedContactData['cle'] = uniqid();
+        $formattedContactData['telephone_fixe'] = 05000000;
+        $formattedContactData['service'] = "service_x";
+        $formattedContactData['fonction'] = "fonction_x";
+        
+        // Création du contact
+        $contact = Contact::create($formattedContactData);
 
-        //     $contactData['organisation_id'] = $organisation->id;
-
-        //     $contact = Contact::create($contactData);
-
-        //     DB::commit();
-
-        //     return redirect()->route('contacts')->with('success', 'Contact et organisation ajoutés avec succès.');
-        // } catch (\Exception $e) {
-        //     DB::rollBack();
-        //     return redirect()->route('contacts')->with('error', 'Une erreur est survenue lors de la création du contact et de l\'organisation.');
-        // }
+        return redirect()->route('contacts.index')->with('success', 'Contact et organisation ajoutés avec succès.');
     }
+
+    
+
 
     /**
      * Display the specified resource.
@@ -85,9 +96,7 @@ class ContactController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-/**
- * Remove the specified resource from storage.
- */
+
     public function destroy(Contact $contact)
     {
         try {
@@ -99,6 +108,34 @@ class ContactController extends Controller
             return redirect()->route('contacts.index')->with('success', 'Contact supprimé avec succès.');
         } catch (\Exception $e) {
             return redirect()->route('contacts.index')->with('error', 'Une erreur est survenue lors de la suppression du contact.');
+        }
+    }
+    
+    /**
+     * Recherche des contacts par nom, prénom ou nom d'organisation.
+     */
+    public function search(Request $request)
+    {
+        $query = $request->search;
+        
+        if (empty($query)) {
+            return redirect('contacts');
+        } else {
+            $contacts = Contact::with('organisation')
+                ->where(function($queryBuilder) use ($query) {
+                    $queryBuilder->where('nom', 'LIKE', "%$query%")
+                                ->orWhere('prenom', 'LIKE', "%$query%");
+                })
+                ->orWhereHas('organisation', function ($organisationQueryBuilder) use ($query) {
+                    $organisationQueryBuilder->where('nom', 'LIKE', "%$query%");
+                })
+                ->paginate(10);
+
+            if ($contacts->isEmpty()) {
+                return redirect('contacts');
+            }
+
+            return view('contact_search', compact('contacts'));
         }
     }
 

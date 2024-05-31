@@ -16,13 +16,11 @@ class StoreContactRequest extends FormRequest
         return [
             'prenom' => 'required|regex:/^[a-zA-Z]+$/|max:255',
             'nom' => 'required|regex:/^[a-zA-Z]+$/|max:255',
-            'e-mail' => 'required|email|max:255',
-            'organisation_id' => 'required|integer',
-            // 'telephone_fixe' => 'required',
-            // 'service' => 'required',
-            // 'fonction' => 'required', 
+            'e_mail' => 'required|email|max:255',
         ];
         
     }
+
+    
 }
 

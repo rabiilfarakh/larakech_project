@@ -10,10 +10,16 @@ class Organisation extends Model
     use HasFactory;
     protected $table = 'organisation';
     protected $fillable = [
+        'cle',
         'nom',
         'adresse',
         'code_postal',
         'ville',
         'statut',
     ];
+
+    public function contacts()
+    {
+        return $this->hasMany(Contact::class);
+    }
 }
