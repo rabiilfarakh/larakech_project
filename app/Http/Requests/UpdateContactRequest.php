@@ -9,20 +9,18 @@ class UpdateContactRequest extends FormRequest
     /**
      * Determine if the user is authorized to make this request.
      */
-    public function authorize(): bool
+    public function authorize()
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
-    public function rules(): array
+    public function rules()
     {
         return [
-            //
+            'prenom' => 'required|regex:/^[a-zA-Z]+$/|max:255',
+            'nom' => 'required|regex:/^[a-zA-Z]+$/|max:255',
+            'e_mail' => 'required|email|max:255',
         ];
+        
     }
 }

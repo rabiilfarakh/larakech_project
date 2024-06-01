@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Contact;
 use App\Models\Organisation;
 use Illuminate\Http\Request;
+use App\Services\DataFormatter;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\StoreContactRequest;
 use App\Http\Requests\UpdateContactRequest;
 use App\Http\Requests\StoreOrganisationRequest;
-use App\Services\DataFormatter;
+use App\Http\Requests\UpdateOrganisationRequest;
 
 class ContactController extends Controller
 {
@@ -20,14 +21,6 @@ class ContactController extends Controller
     {
         $contacts = Contact::with('organisation')->paginate(10);
         return view('contact', compact('contacts'));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
     }
 
     /**
@@ -43,28 +36,17 @@ class ContactController extends Controller
         $formattedContactData = DataFormatter::formatContact($validatedContactData);
         $formattedOrganisationData = DataFormatter::formatOrganisation($validatedOrganisationData);
         
-        // Générer une clé unique pour l'organisation
-        $formattedOrganisationData['cle'] = uniqid();
-        
         // Création de l'organisation
         $organisation = Organisation::create($formattedOrganisationData);
 
         // Ajout de l'id de l'organisation au tableau de données du contact
         $formattedContactData['organisation_id'] = $organisation->id;
-
-        // Générer une clé unique pour le contact
-        $formattedContactData['cle'] = uniqid();
-        $formattedContactData['telephone_fixe'] = 05000000;
-        $formattedContactData['service'] = "service_x";
-        $formattedContactData['fonction'] = "fonction_x";
         
         // Création du contact
         $contact = Contact::create($formattedContactData);
 
         return redirect()->route('contacts.index')->with('success', 'Contact et organisation ajoutés avec succès.');
     }
-
-    
 
 
     /**
@@ -74,29 +56,39 @@ class ContactController extends Controller
     {
         $contactWithOrganization = Contact::with('organisation')->findOrFail($contact->id);
         return response()->json($contactWithOrganization);
-    }
-    
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Contact $contact)
-    {
-        //
-    }
+    }  
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateContactRequest $request, Contact $contact)
+    public function update(UpdateContactRequest $contactRequest, UpdateOrganisationRequest $organisationRequest, $id)
     {
-        dd("update");
+        // dd($contactRequest);
+        // Récupération du contact et de l'organisation existants
+        $contact = Contact::findOrFail($id);
+        $organisation = Organisation::findOrFail($contact->organisation_id);
+    
+        // Validation des données
+        $validatedContactData = $contactRequest->validated();
+        $validatedOrganisationData = $organisationRequest->validated();
+        
+        // Formatage des données
+        $formattedContactData = DataFormatter::formatContactForUpdate($validatedContactData);
+        $formattedOrganisationData = DataFormatter::formatOrganisationForUpdate($validatedOrganisationData);
+    
+        // Mise à jour de l'organisation
+        $organisation->update($formattedOrganisationData);
+    
+        // Mise à jour du contact
+        $contact->update($formattedContactData);
+    
+        return redirect()->route('contacts.index')->with('success', 'Contact et organisation mis à jour avec succès.');
     }
+    
 
     /**
      * Remove the specified resource from storage.
      */
-
     public function destroy(Contact $contact)
     {
         try {

@@ -61,9 +61,9 @@
                 @endforeach
             </tbody>
 
-            <tbody id="searchResults" class="bg-white hidden" >
+            {{-- <tbody id="searchResults" class="bg-white hidden" >
                 <!-- Les résultats de la recherche seront affichés ici -->
-            </tbody>
+            </tbody> --}}
         </table>
         
         <div class="mt-10">
