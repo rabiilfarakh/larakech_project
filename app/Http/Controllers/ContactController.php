@@ -17,15 +17,29 @@ class ContactController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+
+    public function index(Request $request)
     {
-        $contacts = Contact::with('organisation')->paginate(10);
-        return view('contact', compact('contacts'));
+        $sortBy = $request->query('sort_by', 'contact.nom'); 
+        $sortOrder = $request->query('sort_order', 'asc');
+
+        if ($sortBy == 'contact.nom') {
+            $contacts = $this->sortByContactName($sortOrder);
+        }
+        elseif ($sortBy == 'organisation.nom') {
+            $contacts = $this->sortByOrganisationName($sortOrder);
+        }
+        elseif ($sortBy == 'organisation.statut') {
+            $contacts = $this->sortByOrganisationStatus($sortOrder);
+        }
+
+        return view('contact', compact('contacts', 'sortBy', 'sortOrder'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
+
     public function store(StoreContactRequest $contactRequest, StoreOrganisationRequest $organisationRequest)
     {
         try {
@@ -53,6 +67,7 @@ class ContactController extends Controller
     /**
      * Display the specified resource.
      */
+
     public function show(Contact $contact)
     {
         try {
@@ -66,6 +81,7 @@ class ContactController extends Controller
     /**
      * Update the specified resource in storage.
      */
+
     public function update(UpdateContactRequest $contactRequest, UpdateOrganisationRequest $organisationRequest, $id)
     {
         try {
@@ -89,11 +105,11 @@ class ContactController extends Controller
             return redirect()->route('contacts.index')->with('error', 'Une erreur est survenue lors de la mise à jour du contact.');
         }
     }
-    
 
     /**
      * Remove the specified resource from storage.
      */
+
     public function destroy(Contact $contact)
     {
         try {
@@ -114,6 +130,7 @@ class ContactController extends Controller
     /**
      * Recherche des contacts par nom, prénom ou nom d'organisation.
      */
+
     public function search(Request $request)
     {
         $query = $request->input('search');
@@ -142,6 +159,7 @@ class ContactController extends Controller
     /**
      * Check if contact or company exists.
      */
+
     public function check(Request $request)
     {
         $contactExists = Contact::where('prenom', $request->input('prenom'))
@@ -155,5 +173,25 @@ class ContactController extends Controller
             'contact_exists' => $contactExists,
             'company_exists' => $companyExists,
         ]);
+    }
+
+
+    private function sortByContactName($sortOrder)
+    {
+        return Contact::orderBy('nom', $sortOrder)->paginate(10);
+    }
+
+    private function sortByOrganisationName($sortOrder)
+    {
+        return Contact::join('organisation', 'contact.organisation_id', '=', 'organisation.id')
+                      ->orderBy('organisation.nom', $sortOrder)
+                      ->paginate(10);
+    }
+    
+    private function sortByOrganisationStatus($sortOrder)
+    {
+        return Contact::join('organisation', 'contact.organisation_id', '=', 'organisation.id')
+                      ->orderBy('organisation.statut', $sortOrder)
+                      ->paginate(10);
     }
 }

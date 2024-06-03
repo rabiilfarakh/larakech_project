@@ -26,12 +26,25 @@
         <table class="w-full table-fixed mt-5">
             <thead>
                 <tr class="bg-gray-100">
-                    <th class="w-1/3 py-4 px-6 text-left text-gray-600 font-bold uppercase">Nom du contact</th>
-                    <th class="w-1/3 py-4 px-6 text-left text-gray-600 font-bold uppercase">Société</th>
-                    <th class="w-1/7 py-4 px-6 text-left text-gray-600 font-bold uppercase">Statut</th>
+                    <th class="w-1/3 py-4 px-6 text-left text-gray-600 font-bold uppercase">
+                        <a href="{{ route('contacts.index', ['sort_by' => 'contact.nom', 'sort_order' => ($sortBy == 'contact.nom' && $sortOrder == 'asc') ? 'desc' : 'asc']) }}">
+                            Nom du contact
+                        </a>
+                    </th>
+                    <th class="w-1/3 py-4 px-6 text-left text-gray-600 font-bold uppercase">
+                        <a href="{{ route('contacts.index', ['sort_by' => 'organisation.nom', 'sort_order' => ($sortBy == 'organisation.nom' && $sortOrder == 'asc') ? 'desc' : 'asc']) }}">
+                            Société
+                        </a>
+                    </th>
+                    <th class="w-1/7 py-4 px-6 text-left text-gray-600 font-bold uppercase">
+                        <a href="{{ route('contacts.index', ['sort_by' => 'organisation.statut', 'sort_order' => ($sortBy == 'organisation.statut' && $sortOrder == 'asc') ? 'desc' : 'asc']) }}">
+                            Statut
+                        </a>
+                    </th>
                     <th class="w-1/7 py-4 px-6 text-left text-gray-600 font-bold uppercase"></th>
                 </tr>
             </thead>
+            
             <tbody id="tableau" class="bg-white">
                 @foreach ($contacts as $contact)
                 <tr>
@@ -62,9 +75,6 @@
                 @endforeach
             </tbody>
 
-            {{-- <tbody id="searchResults" class="bg-white hidden" >
-                <!-- Les résultats de la recherche seront affichés ici -->
-            </tbody> --}}
         </table>
         
         <div class="mt-10">
@@ -78,7 +88,6 @@
     @include('modals.contacts.contact_update')
     @include('modals.contacts.contact_show')
     
-    {{-- <script src="{{ asset('js/search.js')}}"></script> --}}
     <script src="{{ asset('js/modals/contact_add.js')}}"></script>
     <script src="{{ asset('js/modals/contact_delete.js')}}"></script>
     <script src="{{ asset('js/modals/contact_update.js')}}"></script>

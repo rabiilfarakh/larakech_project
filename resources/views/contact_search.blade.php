@@ -62,7 +62,6 @@
             </tbody>
 
             <tbody id="searchResults" class="bg-white hidden" >
-                <!-- Les résultats de la recherche seront affichés ici -->
             </tbody>
         </table>
         
@@ -75,8 +74,7 @@
     @include('modals.contacts.contact_delete')
     @include('modals.contacts.contact_update')
     @include('modals.contacts.contact_show')
-    
-    {{-- <script src="{{ asset('js/search.js')}}"></script> --}}
+
     <script src="{{ asset('js/modals/contact_add.js')}}"></script>
     <script src="{{ asset('js/modals/contact_delete.js')}}"></script>
     <script src="{{ asset('js/modals/contact_update.js')}}"></script>
