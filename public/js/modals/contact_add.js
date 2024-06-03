@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showModalDoublon() {
+        hideModal();
         modal2.classList.remove('hidden');
         document.body.appendChild(overlay); 
     }

@@ -32,28 +32,35 @@ class ContactController extends Controller
             $validatedContactData = $contactRequest->validated();
             $validatedOrganisationData = $organisationRequest->validated();
 
+            DB::beginTransaction();
             $formattedContactData = DataFormatter::formatContact($validatedContactData);
             $formattedOrganisationData = DataFormatter::formatOrganisation($validatedOrganisationData);
 
             $organisation = Organisation::create($formattedOrganisationData);
             $formattedContactData['organisation_id'] = $organisation->id;
 
-            $contact = Contact::create($formattedContactData);
+            Contact::create($formattedContactData);
+
+            DB::commit();
 
             return response()->json(['success' => true, 'message' => 'Contact et organisation ajoutés avec succès.']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-
 
     /**
      * Display the specified resource.
      */
     public function show(Contact $contact)
     {
-        $contactWithOrganization = Contact::with('organisation')->findOrFail($contact->id);
-        return response()->json($contactWithOrganization);
+        try {
+            $contactWithOrganization = Contact::with('organisation')->findOrFail($contact->id);
+            return response()->json($contactWithOrganization);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Contact non trouvé.'], 404);
+        }
     }  
 
     /**
@@ -61,20 +68,26 @@ class ContactController extends Controller
      */
     public function update(UpdateContactRequest $contactRequest, UpdateOrganisationRequest $organisationRequest, $id)
     {
-        $contact = Contact::findOrFail($id);
-        $organisation = Organisation::findOrFail($contact->organisation_id);
+        try {
+            $contact = Contact::findOrFail($id);
+            $organisation = Organisation::findOrFail($contact->organisation_id);
     
-        $validatedContactData = $contactRequest->validated();
-        $validatedOrganisationData = $organisationRequest->validated();
-        
-        $formattedContactData = DataFormatter::formatContactForUpdate($validatedContactData);
-        $formattedOrganisationData = DataFormatter::formatOrganisationForUpdate($validatedOrganisationData);
+            $validatedContactData = $contactRequest->validated();
+            $validatedOrganisationData = $organisationRequest->validated();
+            
+            $formattedContactData = DataFormatter::formatContactForUpdate($validatedContactData);
+            $formattedOrganisationData = DataFormatter::formatOrganisationForUpdate($validatedOrganisationData);
 
-        $organisation->update($formattedOrganisationData);
+            DB::beginTransaction();
+            $organisation->update($formattedOrganisationData);
+            $contact->update($formattedContactData);
+            DB::commit();
     
-        $contact->update($formattedContactData);
-    
-        return redirect()->route('contacts.index')->with('success', 'Contact et organisation mis à jour avec succès.');
+            return redirect()->route('contacts.index')->with('success', 'Contact et organisation mis à jour avec succès.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->route('contacts.index')->with('error', 'Une erreur est survenue lors de la mise à jour du contact.');
+        }
     }
     
 
@@ -84,13 +97,16 @@ class ContactController extends Controller
     public function destroy(Contact $contact)
     {
         try {
+            DB::beginTransaction();
             $contact->delete();
             if ($contact->organisation->contacts()->count() === 0) {
                 $contact->organisation->delete();
             }
+            DB::commit();
 
             return redirect()->route('contacts.index')->with('success', 'Contact supprimé avec succès.');
         } catch (\Exception $e) {
+            DB::rollBack();
             return redirect()->route('contacts.index')->with('error', 'Une erreur est survenue lors de la suppression du contact.');
         }
     }
@@ -100,44 +116,44 @@ class ContactController extends Controller
      */
     public function search(Request $request)
     {
-        $query = $request->search;
+        $query = $request->input('search');
         
         if (empty($query)) {
             return redirect('contacts');
-        } else {
-            $contacts = Contact::with('organisation')
-                ->where(function($queryBuilder) use ($query) {
-                    $queryBuilder->where('nom', 'LIKE', "%$query%")
-                                ->orWhere('prenom', 'LIKE', "%$query%");
-                })
-                ->orWhereHas('organisation', function ($organisationQueryBuilder) use ($query) {
-                    $organisationQueryBuilder->where('nom', 'LIKE', "%$query%");
-                })
-                ->paginate(10);
-
-            if ($contacts->isEmpty()) {
-                return redirect('contacts');
-            }
-
-            return view('contact_search', compact('contacts'));
         }
+
+        $contacts = Contact::with('organisation')
+            ->where(function($queryBuilder) use ($query) {
+                $queryBuilder->where('nom', 'LIKE', "%$query%")
+                            ->orWhere('prenom', 'LIKE', "%$query%");
+            })
+            ->orWhereHas('organisation', function ($organisationQueryBuilder) use ($query) {
+                $organisationQueryBuilder->where('nom', 'LIKE', "%$query%");
+            })
+            ->paginate(10);
+
+        if ($contacts->isEmpty()) {
+            return redirect('contacts');
+        }
+
+        return view('contact_search', compact('contacts'));
     }
 
-
+    /**
+     * Check if contact or company exists.
+     */
     public function check(Request $request)
     {
-        $contact_exists = Contact::where('prenom', $request->prenom)
-                                ->where('nom', $request->nom)
+        $contactExists = Contact::where('prenom', $request->input('prenom'))
+                                ->where('nom', $request->input('nom'))
                                 ->exists();
 
-        $company_exists = Contact::where('nom', $request->entreprise)
-                                ->exists();
+        $companyExists = Organisation::where('nom', $request->input('entreprise'))
+                                     ->exists();
 
         return response()->json([
-            'contact_exists' => $contact_exists,
-            'company_exists' => $company_exists,
+            'contact_exists' => $contactExists,
+            'company_exists' => $companyExists,
         ]);
     }
-
-
 }
