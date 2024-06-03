@@ -12,7 +12,7 @@ function showModalShow(contactId) {
         
         var statutSelect = document.getElementById('show_statut');
         statutSelect.value = data.organisation.statut;
-        statutSelect.disabled = true;  // Désactiver la sélection
+        statutSelect.disabled = true;  
         
         var overlay = document.createElement('div');
         overlay.classList.add('overlay');

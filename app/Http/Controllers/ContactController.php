@@ -28,24 +28,22 @@ class ContactController extends Controller
      */
     public function store(StoreContactRequest $contactRequest, StoreOrganisationRequest $organisationRequest)
     {
-        // Validation des données
-        $validatedContactData = $contactRequest->validated();
-        $validatedOrganisationData = $organisationRequest->validated();
-        
-        // Formatage des données
-        $formattedContactData = DataFormatter::formatContact($validatedContactData);
-        $formattedOrganisationData = DataFormatter::formatOrganisation($validatedOrganisationData);
-        
-        // Création de l'organisation
-        $organisation = Organisation::create($formattedOrganisationData);
+        try {
+            $validatedContactData = $contactRequest->validated();
+            $validatedOrganisationData = $organisationRequest->validated();
 
-        // Ajout de l'id de l'organisation au tableau de données du contact
-        $formattedContactData['organisation_id'] = $organisation->id;
-        
-        // Création du contact
-        $contact = Contact::create($formattedContactData);
+            $formattedContactData = DataFormatter::formatContact($validatedContactData);
+            $formattedOrganisationData = DataFormatter::formatOrganisation($validatedOrganisationData);
 
-        return redirect()->route('contacts.index')->with('success', 'Contact et organisation ajoutés avec succès.');
+            $organisation = Organisation::create($formattedOrganisationData);
+            $formattedContactData['organisation_id'] = $organisation->id;
+
+            $contact = Contact::create($formattedContactData);
+
+            return response()->json(['success' => true, 'message' => 'Contact et organisation ajoutés avec succès.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
 
@@ -63,23 +61,17 @@ class ContactController extends Controller
      */
     public function update(UpdateContactRequest $contactRequest, UpdateOrganisationRequest $organisationRequest, $id)
     {
-        // dd($contactRequest);
-        // Récupération du contact et de l'organisation existants
         $contact = Contact::findOrFail($id);
         $organisation = Organisation::findOrFail($contact->organisation_id);
     
-        // Validation des données
         $validatedContactData = $contactRequest->validated();
         $validatedOrganisationData = $organisationRequest->validated();
         
-        // Formatage des données
         $formattedContactData = DataFormatter::formatContactForUpdate($validatedContactData);
         $formattedOrganisationData = DataFormatter::formatOrganisationForUpdate($validatedOrganisationData);
-    
-        // Mise à jour de l'organisation
+
         $organisation->update($formattedOrganisationData);
     
-        // Mise à jour du contact
         $contact->update($formattedContactData);
     
         return redirect()->route('contacts.index')->with('success', 'Contact et organisation mis à jour avec succès.');
@@ -130,5 +122,22 @@ class ContactController extends Controller
             return view('contact_search', compact('contacts'));
         }
     }
+
+
+    public function check(Request $request)
+    {
+        $contact_exists = Contact::where('prenom', $request->prenom)
+                                ->where('nom', $request->nom)
+                                ->exists();
+
+        $company_exists = Contact::where('nom', $request->entreprise)
+                                ->exists();
+
+        return response()->json([
+            'contact_exists' => $contact_exists,
+            'company_exists' => $company_exists,
+        ]);
+    }
+
 
 }
